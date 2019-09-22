@@ -6,4 +6,6 @@
 
 using System.Runtime.CompilerServices;
 
+#if DEBUG
 [assembly: InternalsVisibleTo("PosInformatique.AspNet.WebForms.DependencyInjection.Tests")]
+#endif
