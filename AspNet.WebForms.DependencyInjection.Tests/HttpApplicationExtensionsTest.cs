@@ -3,7 +3,7 @@
 //     Copyright (c) P.O.S Informatique. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
+namespace System.Web.Tests
 {
     using System;
     using System.Collections;
@@ -13,12 +13,13 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Serialization;
-    using System.Web;
     using System.Web.Hosting;
     using System.Web.SessionState;
     using FluentAssertions;
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
+    using PosInformatique.AspNet.WebForms.DependencyInjection;
+    using PosInformatique.AspNet.WebForms.DependencyInjection.Tests;
     using Xunit;
 
     public class HttpApplicationExtensionsTest : IDisposable

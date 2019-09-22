@@ -8,7 +8,6 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.AspNet.WebForms.DependencyInjection</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression></PackageLicenseExpression>
     <Company>P.O.S Informatique</Company>
     <Copyright>Copyright © 1999-2019 P.O.S Informatique - All rights reserved.</Copyright>
     <PackageTags>aspnet webforms ioc dependencyinjection</PackageTags>
@@ -16,8 +15,8 @@
     <Authors>Gilles TOURREAU</Authors>
     <PackageReleaseNotes>1.0.0 - Initial version</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/PosInformatique/PosInformatique.AspNet.WebForms.DependencyInjection.git</RepositoryUrl>
-    <Version>1.0.0-alpha1</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Version>1.0.0-alpha2</Version>
+    <AssemblyVersion>1.0.0.2</AssemblyVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 

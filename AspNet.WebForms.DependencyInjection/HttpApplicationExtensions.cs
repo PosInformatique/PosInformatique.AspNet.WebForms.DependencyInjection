@@ -3,15 +3,15 @@
 //     Copyright (c) P.O.S Informatique. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace PosInformatique.AspNet.WebForms.DependencyInjection
+namespace System.Web
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Web;
     using System.Web.Hosting;
     using Microsoft.Extensions.DependencyInjection;
+    using PosInformatique.AspNet.WebForms.DependencyInjection;
 
     /// <summary>
     /// Contains extension methods to register a <see cref="ServiceCollection"/> as <see cref="IServiceProvider"/>
