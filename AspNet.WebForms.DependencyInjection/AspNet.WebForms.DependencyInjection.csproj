@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>PosInformatique.AspNet.WebForms.DependencyInjection</AssemblyName>
+    <RootNamespace>PosInformatique.AspNet.WebForms.DependencyInjection</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.AspNet.WebForms.DependencyInjection</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <Company>P.O.S Informatique</Company>
+    <Copyright>Copyright © 1999-2019 P.O.S Informatique - All rights reserved.</Copyright>
+    <PackageTags>aspnet webforms ioc dependencyinjection</PackageTags>
+    <Description>PosInformatique.AspNet.WebForms.DependencyInjection is a library to add the IoC container support of Microsoft.Extensions.DependencyInjection for ASP .NET Web Forms</Description>
+    <Authors>Gilles TOURREAU</Authors>
+    <PackageReleaseNotes>1.0.0 - Initial version</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/PosInformatique/PosInformatique.AspNet.WebForms.DependencyInjection.git</RepositoryUrl>
+    <Version>1.0.0-alpha1</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="7.16.0.8981">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
