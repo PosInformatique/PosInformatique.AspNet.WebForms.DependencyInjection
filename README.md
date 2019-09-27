@@ -11,18 +11,15 @@ Install-Package PosInformatique.AspNet.WebForms.DependencyInjection
 
 ## Setting up
 After adding the **PosInformatique.AspNet.WebForms.DependencyInjection** package on your ASP .NET
-WebForms project call the `AddServiceCollection` the following lines in the constructor of your `HttpApplication` class in the
+WebForms project call the `AddServiceCollection` the following lines in the ``Application_Start`` of your `HttpApplication` class in the
 `Global.asax.cs` code behind:
 ```csharp
 public class Global : HttpApplication
 {
-    public Global()
+    protected void Application_Start(Object sender, EventArgs e)
     {
         ServicesConfig.RegisterServices(this.AddServiceCollection());
-    }
 
-    void Application_Start(object sender, EventArgs e)
-    {
         // Code that runs on application startup
         RouteConfig.RegisterRoutes(RouteTable.Routes);
         BundleConfig.RegisterBundles(BundleTable.Bundles);
