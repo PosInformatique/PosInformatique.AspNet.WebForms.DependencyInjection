@@ -53,9 +53,9 @@ namespace System.Web
             Check.IsNotNull(application, nameof(application));
             Check.IsNotNull(serviceCollection, nameof(serviceCollection));
 
-            RegisterDefaultAspNetServices<TApplication>(serviceCollection);
+            AddDefaultAspNetServices(serviceCollection, application);
 
-            var serviceProvider = new ServiceProviderAdapter(HttpRuntime.WebObjectActivator, serviceCollection);
+            var serviceProvider = new ServiceProviderAdapter(serviceCollection, HttpRuntime.WebObjectActivator);
 
             HostingEnvironment.RegisterObject(serviceProvider);
 
@@ -65,18 +65,53 @@ namespace System.Web
         }
 
         /// <summary>
-        /// Registers default services of ASP .NET on the specified <paramref name="serviceCollection"/>.
+        /// Configures the <paramref name="application"/> to use the specified existing <paramref name="serviceProvider"/>.
         /// </summary>
-        /// <typeparam name="TApplication">Type of the <see cref="HttpApplication"/> which will be registered in the <see cref="IServiceCollection"/>.</typeparam>
-        /// <param name="serviceCollection"><see cref="IServiceCollection"/> which contains the services to provides to the ASP .NET application.</param>
-        private static void RegisterDefaultAspNetServices<TApplication>(IServiceCollection serviceCollection)
+        /// <remarks>Use this method to activate IoC from an existing <see cref="IServiceProvider"/> implementation.</remarks>
+        /// <typeparam name="TApplication">Type of the <see cref="HttpApplication"/> which the <see cref="IServiceProvider"/>
+        /// will be use to retrieve the services using IoC.</typeparam>
+        /// <param name="application">The <see cref="HttpApplication"/> which the <see cref="IServiceProvider"/> will be used on.</param>
+        /// <param name="serviceProvider">Existing <see cref="IServiceProvider"/> which contains the services.</param>
+        /// <returns>The <paramref name="application"/> instance to continue the configuration of it.</returns>
+        /// <exception cref="ArgumentNullException">If the <paramref name="application"/> argument is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="serviceProvider"/> argument is <see langword="null"/>.</exception>
+        public static TApplication UseServiceProvider<TApplication>(this TApplication application, IServiceProvider serviceProvider)
             where TApplication : HttpApplication
         {
-            serviceCollection.AddTransient(serviceProvider => (TApplication)HttpContext.Current.ApplicationInstance);
-            serviceCollection.AddTransient(serviceProvider => HttpContext.Current.ApplicationInstance);
-            serviceCollection.AddTransient(serviceProvider => HttpContext.Current.Request);
-            serviceCollection.AddTransient(serviceProvider => HttpContext.Current.Response);
-            serviceCollection.AddTransient(serviceProvider => HttpContext.Current.Session);
+            Check.IsNotNull(application, nameof(application));
+            Check.IsNotNull(serviceProvider, nameof(serviceProvider));
+
+            var serviceProviderAdapter = new ServiceProviderAdapter(serviceProvider, HttpRuntime.WebObjectActivator);
+
+            HostingEnvironment.RegisterObject(serviceProviderAdapter);
+
+            HttpRuntime.WebObjectActivator = serviceProviderAdapter;
+
+            return application;
+        }
+
+        /// <summary>
+        /// Add default services of ASP .NET on the specified <paramref name="services"/>.
+        /// </summary>
+        /// <typeparam name="TApplication">Type of the <see cref="HttpApplication"/> which will be registered in the <see cref="IServiceCollection"/>.</typeparam>
+        /// <param name="services"><see cref="IServiceCollection"/> which contains the services to provides to the ASP .NET application.</param>
+        /// <param name="application"><see cref="HttpApplication"/> which the ASP .NET services have to be registered on the <see cref="IServiceCollection"/>.</param>
+        /// <exception cref="ArgumentNullException">If the <paramref name="services"/> argument is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="application"/> argument is <see langword="null"/>.</exception>
+        /// <returns>The <paramref name="services"/> which allows to continue to add additional services.</returns>
+        public static IServiceCollection AddDefaultAspNetServices<TApplication>(this IServiceCollection services, TApplication application)
+            where TApplication : HttpApplication
+        {
+            Check.IsNotNull(services, nameof(services));
+            Check.IsNotNull(application, nameof(application));
+
+            services.AddTransient(serviceProvider => (TApplication)HttpContext.Current.ApplicationInstance);
+            services.AddTransient(serviceProvider => HttpContext.Current.ApplicationInstance);
+            services.AddTransient(serviceProvider => HttpContext.Current.Request);
+            services.AddTransient(serviceProvider => HttpContext.Current.Response);
+            services.AddTransient(serviceProvider => HttpContext.Current.Session);
+
+            return services;
         }
     }
 }
