@@ -40,7 +40,7 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests
 
     public static class ServicesConfig
     {
-        public static void RegisterServices(ServiceCollection serviceCollection)
+        public static void RegisterServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IDogRepository, DogRepository>();
             serviceCollection.AddTransient<IDogManager, DogManager>();
