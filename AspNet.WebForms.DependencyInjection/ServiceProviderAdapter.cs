@@ -28,7 +28,7 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
         /// <summary>
         /// Instance of the <see cref="ServiceProvider"/> used to provides the services.
         /// </summary>
-        private readonly Lazy<ServiceProvider> serviceProvider;
+        private readonly Lazy<IServiceProvider> serviceProvider;
 
         /// <summary>
         /// Cache of <see cref="IServiceFactory"/> used to build instances of the services when the service has not been registered
@@ -42,17 +42,33 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
         private bool isDisposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceProviderAdapter"/> class.
+        /// Initializes a new instance of the <see cref="ServiceProviderAdapter"/> class which will build a <see cref="IServiceProvider"/>
+        /// from an existing <paramref name="serviceCollection"/>.
         /// </summary>
+        /// <param name="serviceCollection"><see cref="IServiceCollection"/> which contains the service to provide in the <see cref="serviceProvider"/>.</param>
         /// <param name="nextProvider">Existing <see cref="IServiceProvider"/> where to find the service if no service
         /// has been found in the <paramref name="serviceCollection"/>.</param>
-        /// <param name="serviceCollection"><see cref="IServiceCollection"/> which contains the service to provide in the <see cref="serviceProvider"/>.</param>
-        public ServiceProviderAdapter(IServiceProvider nextProvider, IServiceCollection serviceCollection)
+        public ServiceProviderAdapter(IServiceCollection serviceCollection, IServiceProvider nextProvider)
         {
             this.nextProvider = nextProvider;
             this.factoryServices = new ConcurrentDictionary<Type, IServiceFactory>();
 
-            this.serviceProvider = new Lazy<ServiceProvider>(serviceCollection.BuildServiceProvider, LazyThreadSafetyMode.ExecutionAndPublication);
+            this.serviceProvider = new Lazy<IServiceProvider>(serviceCollection.BuildServiceProvider, LazyThreadSafetyMode.ExecutionAndPublication);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceProviderAdapter"/> class which retrieve the service from an existing
+        /// <see cref="serviceProvider"/>.
+        /// </summary>
+        /// <param name="serviceProvider"><see cref="IServiceProvider"/> which contains the service to provide in the <see cref="serviceProvider"/>.</param>
+        /// <param name="nextProvider">Existing <see cref="IServiceProvider"/> where to find the service if no service
+        /// has been found in the <paramref name="serviceProvider"/>.</param>
+        public ServiceProviderAdapter(IServiceProvider serviceProvider, IServiceProvider nextProvider)
+        {
+            this.nextProvider = nextProvider;
+            this.factoryServices = new ConcurrentDictionary<Type, IServiceFactory>();
+
+            this.serviceProvider = new Lazy<IServiceProvider>(() => new NonDisposableServiceProvider(serviceProvider), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         /// <summary>
@@ -116,7 +132,10 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
         {
             if (this.serviceProvider.IsValueCreated)
             {
-                this.serviceProvider.Value.Dispose();
+                if (this.serviceProvider.Value is IDisposable disposableServiceProvider)
+                {
+                    disposableServiceProvider.Dispose();
+                }
             }
 
             this.isDisposed = true;
@@ -142,6 +161,37 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
             }
 
             return DefaultServiceFactory.Instance;
+        }
+
+        /// <summary>
+        /// Wraps a <see cref="IServiceProvider"/> and avoid to be <see cref="IDisposable"/> to be called
+        /// by the <see cref="IDisposable.Dispose"/> method of the <see cref="ServiceProviderAdapter"/>.
+        /// </summary>
+        /// <remarks>This implementation is used when the developer want to use a <see cref="IServiceProvider"/>
+        /// which is not builded by the <see cref="ServiceProviderAdapter"/> and so it is not managed
+        /// and responsability of this library to call the <see cref="IDisposable.Dispose"/>.</remarks>
+        private class NonDisposableServiceProvider : IServiceProvider
+        {
+            /// <summary>
+            /// <see cref="IServiceProvider"/> to wrap.
+            /// </summary>
+            private readonly IServiceProvider serviceProvider;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="NonDisposableServiceProvider"/> class which wrap the
+            /// <paramref name="serviceProvider"/>.
+            /// </summary>
+            /// <param name="serviceProvider"><see cref="IServiceProvider"/> to wrap.</param>
+            public NonDisposableServiceProvider(IServiceProvider serviceProvider)
+            {
+                this.serviceProvider = serviceProvider;
+            }
+
+            /// <inheritdoc />
+            public object GetService(Type serviceType)
+            {
+                return this.serviceProvider.GetService(serviceType);
+            }
         }
 
         /// <summary>

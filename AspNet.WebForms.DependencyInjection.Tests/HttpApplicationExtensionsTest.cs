@@ -175,6 +175,125 @@ namespace System.Web.Tests
                 .And.ParamName.Should().Be("serviceCollection");
         }
 
+        [Fact]
+        public void UseServiceProvider()
+        {
+            var application = new HttpApplicationMock();
+
+            var service = Mock.Of<IService>();
+
+            var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
+            serviceProvider.Setup(sp => sp.GetService(typeof(IService)))
+                .Returns(service);
+
+            var returnedApplication = HttpApplicationExtensions.UseServiceProvider(application, serviceProvider.Object);
+
+            returnedApplication.Should().BeSameAs(application);
+
+            // Checks the WebObjectActivator has been defined correctly
+            HttpRuntime.WebObjectActivator.Should().BeOfType<ServiceProviderAdapter>();
+
+            // Checks the services
+            HttpRuntime.WebObjectActivator.GetService(typeof(IService)).Should().BeSameAs(service);
+
+            // Checks the next provider in the adapter has been defined correctly
+            HttpRuntime.WebObjectActivator.GetFieldValue<IServiceProvider>("nextProvider").Should().BeSameAs(this.existingProvider);
+
+            // Checks the adapter has been registered on the hosting environment infrastructure
+            typeof(HostingEnvironment).GetStaticValue<object>("_theHostingEnvironment").GetFieldValue<Hashtable>("_registeredObjects").ContainsKey(HttpRuntime.WebObjectActivator);
+            typeof(HostingEnvironment).GetStaticValue<object>("_theHostingEnvironment").GetFieldValue<Hashtable>("_registeredObjects").ContainsValue(HttpRuntime.WebObjectActivator);
+        }
+
+        [Fact]
+        public void UseServiceProvider_WithNullApplication_ExceptionThrown()
+        {
+            Action act = () =>
+            {
+                HttpApplicationExtensions.UseServiceProvider<HttpApplication>(null, null);
+            };
+
+            act.Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be("application");
+        }
+
+        [Fact]
+        public void UseServiceProvider_WithNullServiceProvider_ExceptionThrown()
+        {
+            Action act = () =>
+            {
+                HttpApplicationExtensions.UseServiceProvider(new HttpApplication(), null);
+            };
+
+            act.Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be("serviceProvider");
+        }
+
+        [Fact]
+        public void AddDefaultAspNetServices()
+        {
+            // Creates a HttpContext
+            var application = new HttpApplicationMock();
+            var request = new HttpRequest("The filename", "http://theurl", "");
+            var response = new HttpResponse(new StringWriter());
+            var session = FormatterServices.GetUninitializedObject(typeof(HttpSessionState));
+
+            HttpContext.Current = new HttpContext(request, response)
+            {
+                ApplicationInstance = application,
+                Items =
+                {
+                    { "AspSession", session }
+                }
+            };
+
+            try
+            {
+                var collection = new ServiceCollection();
+
+                var returnedCollection = HttpApplicationExtensions.AddDefaultAspNetServices(collection, application);
+
+                returnedCollection.Should().BeSameAs(collection);
+
+                // Builds the service provider and check the registered services
+                var serviceProvider = collection.BuildServiceProvider();
+
+                // Checks the services
+                serviceProvider.GetService(typeof(HttpApplication)).Should().BeSameAs(application);
+                serviceProvider.GetService(typeof(HttpApplicationMock)).Should().BeSameAs(application);
+                serviceProvider.GetService(typeof(HttpRequest)).Should().BeSameAs(request);
+                serviceProvider.GetService(typeof(HttpResponse)).Should().BeSameAs(response);
+                serviceProvider.GetService(typeof(HttpSessionState)).Should().BeSameAs(session);
+            }
+            finally
+            {
+                HttpContext.Current = null;
+            }
+        }
+
+        [Fact]
+        public void AddDefaultAspNetServices_WithNullServiceCollection_ExceptionThrown()
+        {
+            Action act = () =>
+            {
+                HttpApplicationExtensions.AddDefaultAspNetServices<HttpApplication>(null, null);
+            };
+
+            act.Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be("services");
+        }
+
+        [Fact]
+        public void AddDefaultAspNetServices_WithNullHttpApplication_ExceptionThrown()
+        {
+            Action act = () =>
+            {
+                HttpApplicationExtensions.AddDefaultAspNetServices<HttpApplication>(Mock.Of<IServiceCollection>(), null);
+            };
+
+            act.Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be("application");
+        }
+
         public void Dispose()
         {
             HttpRuntime.WebObjectActivator = null;
