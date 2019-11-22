@@ -14,13 +14,14 @@
     <Description>PosInformatique.AspNet.WebForms.DependencyInjection is a library to add the IoC container support of Microsoft.Extensions.DependencyInjection for ASP .NET Web Forms</Description>
     <Authors>Gilles TOURREAU</Authors>
     <PackageReleaseNotes>
+      1.2.0 - Add the support of the [ActivatorUtilitiesConstructor] attribute.
       1.1.0 - Using the IServiceCollection in the public API instead of ServiceCollection.
               Add new UseServiceProvider() and AddDefaultAspNetServices() API methods to use an existing IServiceProvider and IServiceCollection.
       1.0.0 - Initial version
     </PackageReleaseNotes>
     <RepositoryUrl>https://github.com/PosInformatique/PosInformatique.AspNet.WebForms.DependencyInjection.git</RepositoryUrl>
-    <Version>1.0.0-alpha2</Version>
-    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <Version>1.2.0-beta1</Version>
+    <AssemblyVersion>1.2.0.1</AssemblyVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
