@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,29 +9,30 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests
 {
-    public partial class _Default : Page
+    public partial class UserControlWithDependency : System.Web.UI.UserControl
     {
         private readonly IDogManager dogManager;
 
-        private readonly HttpRequest httpRequest;
-
         [ActivatorUtilitiesConstructor]
-        public _Default(IDogManager dogManager, HttpRequest httpRequest)
+        public UserControlWithDependency(IDogManager dogManager)
         {
             this.dogManager = dogManager;
-            this.httpRequest = httpRequest;
         }
 
-        public _Default()
+        public UserControlWithDependency(IDogManager dogManager, IDogRepository dogRepository)
         {
+            throw new InvalidOperationException("Must not be called");
+        }
+
+        public UserControlWithDependency()
+        {
+            throw new InvalidOperationException("Must not be called");
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             this.doggoList.DataSource = this.dogManager.GetDogs();
             this.doggoList.DataBind();
-
-            this.urlFromHttpRequest.Text = this.httpRequest.Url.ToString();
         }
     }
 }

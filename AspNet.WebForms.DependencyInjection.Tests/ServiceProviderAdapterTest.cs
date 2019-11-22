@@ -1,7 +1,15 @@
+//-----------------------------------------------------------------------
+// <copyright file="ServiceProviderAdapterTest.cs" company="P.O.S Informatique">
+//     Copyright (c) P.O.S Informatique. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
 using System;
+using System.Web.UI;
+using ASP;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using PosInformatique.AspNet.WebForms.DependencyInjection.Tests;
 using Xunit;
 
 namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
@@ -72,6 +80,46 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
             var serviceProviderAdapter = new ServiceProviderAdapter(serviceCollection, null);
 
             var result = serviceProviderAdapter.GetService(typeof(Service)).As<Service>();
+
+            result.Should().NotBeNull();
+            result.DependentService.Should().NotBeNull();
+
+            // Calls again to check the internal cache have not problem
+            var result2 = serviceProviderAdapter.GetService(typeof(Service)).As<Service>();
+
+            result2.Should().NotBeNull();
+            result2.DependentService.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void GetService_UsingServiceCollection_WithInstantiationAspDotNetControlWithInjectionWithNotAspNamespace()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IDependentService, DependentService>();
+
+            var serviceProviderAdapter = new ServiceProviderAdapter(serviceCollection, null);
+
+            var result = serviceProviderAdapter.GetService(typeof(ControlWithService)).As<ControlWithService>();
+
+            result.Should().NotBeNull();
+            result.DependentService.Should().NotBeNull();
+
+            // Calls again to check the internal cache have not problem
+            var result2 = serviceProviderAdapter.GetService(typeof(Service)).As<Service>();
+
+            result2.Should().NotBeNull();
+            result2.DependentService.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void GetService_UsingServiceCollection_WithInstantiationAspDotNetControlWithInjectionInAspNamespace()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IDependentService, DependentService>();
+
+            var serviceProviderAdapter = new ServiceProviderAdapter(serviceCollection, null);
+
+            var result = serviceProviderAdapter.GetService(typeof(ControlWithServiceInAspNamespace)).As<ControlWithServiceInAspNamespace>();
 
             result.Should().NotBeNull();
             result.DependentService.Should().NotBeNull();
@@ -224,10 +272,6 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
                 .And.ObjectName.Should().Be("PosInformatique.AspNet.WebForms.DependencyInjection.ServiceProviderAdapter");
         }
 
-        public interface IService
-        {
-        }
-
         public class Service : IService
         {
             public Service(IDependentService dependentService)
@@ -242,8 +286,24 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
             }
         }
 
-        public interface IDependentService
+        public class ControlWithService : Control, IService
         {
+            [ActivatorUtilitiesConstructor]
+            public ControlWithService(IDependentService dependentService)
+            {
+                this.DependentService = dependentService;
+            }
+
+            public ControlWithService(IDependentService dependentService1, IDependentService dependentService2, IDependentService dependentService3)
+            {
+                throw new InvalidOperationException("Must not be called !");
+            }
+
+            public IDependentService DependentService
+            {
+                get;
+                set;
+            }
         }
 
         public class DependentService : IDependentService, IDisposable
@@ -272,6 +332,37 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests
             internal ServiceInternal()
             {
             }
+        }
+    }
+
+    public interface IService
+    {
+    }
+
+    public interface IDependentService
+    {
+    }
+}
+
+namespace ASP
+{
+    public class ControlWithServiceInAspNamespace : Control, IService
+    {
+        [ActivatorUtilitiesConstructor]
+        public ControlWithServiceInAspNamespace(IDependentService dependentService)
+        {
+            this.DependentService = dependentService;
+        }
+
+        public ControlWithServiceInAspNamespace(IDependentService dependentService1, IDependentService dependentService2, IDependentService dependentService3)
+        {
+            throw new InvalidOperationException("Must not be called !");
+        }
+
+        public IDependentService DependentService
+        {
+            get;
+            set;
         }
     }
 }

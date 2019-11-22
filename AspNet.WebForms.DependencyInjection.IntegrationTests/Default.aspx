@@ -1,5 +1,7 @@
 ﻿<%@ Page Title="Home Page" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests._Default" %>
 <%@ Import Namespace="PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests" %>
+<%@ Register Src="~/UserControlWithDependency.ascx" TagPrefix="uc1" TagName="UserControlWithDependency" %>
+
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 
@@ -13,8 +15,8 @@
     <asp:GridView runat="server" ID="doggoList" ItemType="PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests.Dog" AutoGenerateColumns="false">
         <Columns>
             <asp:BoundField DataField="Name" />
-               <asp:BoundField DataField="TatooNumber" />
-     </Columns>
+            <asp:BoundField DataField="TatooNumber" />
+        </Columns>
     </asp:GridView>
 
     <p>
@@ -31,6 +33,8 @@
 
     URL from HttpRequest injected: <asp:Label runat="server" ID="urlFromHttpRequest" />
 
+    <p>User Control with dependency:</p>
+    <uc1:UserControlWithDependency runat="server" id="UserControlWithDependency" />
     <!-- End the test -->
     <div class="row">
         <div class="col-md-4">
