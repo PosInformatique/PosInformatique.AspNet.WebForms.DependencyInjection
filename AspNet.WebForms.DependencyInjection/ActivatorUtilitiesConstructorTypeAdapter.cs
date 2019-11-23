@@ -34,18 +34,17 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
             : base(type)
         {
             // Retrieves all the constructors
-            var bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic;
-            this.constructors = type.GetConstructors(bindingFlags);
+            this.constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic);
 
             for (int i = 0; i < this.constructors.Length; i++)
             {
                 // Try to retrieve a constructor with the same argument in the base type.
                 var parameters = this.constructors[i].GetParameters().Select(p => p.ParameterType).ToArray();
-                var baseConstructor = this.typeImpl.BaseType.GetConstructor(bindingFlags, null, parameters, null);
+                var baseConstructor = this.typeImpl.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, parameters, null);
 
                 if (baseConstructor != null)
                 {
-                    // A constructor with same argument has been found, determines if the ActivatorUtilitiesConstructorAttribute has been applied.
+                    // A public instance constructor with same argument has been found, determines if the ActivatorUtilitiesConstructorAttribute has been applied.
                     if (baseConstructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute)))
                     {
                         // The ActivatorUtilitiesConstructorAttribute has been defined, in this case

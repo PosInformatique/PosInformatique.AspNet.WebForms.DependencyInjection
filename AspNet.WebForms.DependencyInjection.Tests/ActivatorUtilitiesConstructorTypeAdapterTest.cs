@@ -113,6 +113,44 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests.Tests
         }
 
         [Fact]
+        public void GetConstructors_ParameterlessInstance()
+        {
+            var type = new ActivatorUtilitiesConstructorTypeAdapter(typeof(ConstructorParameterless));
+
+            var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+
+            constructors.Should().HaveCount(1);
+            constructors[0].IsPublic.Should().BeTrue();
+
+            type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Should().Equal(constructors);
+
+            // Compare with the .NET behavior
+            constructors = typeof(ConstructorParameterless).GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+
+            constructors.Should().HaveCount(1);
+            constructors[0].IsPublic.Should().BeTrue();
+        }
+
+        [Fact]
+        public void GetConstructors_ParameterlessStatic()
+        {
+            var type = new ActivatorUtilitiesConstructorTypeAdapter(typeof(ConstructorParameterless));
+
+            var constructors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Static);
+
+            constructors.Should().HaveCount(1);
+            constructors[0].IsPrivate.Should().BeTrue();
+
+            type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Static).Should().Equal(constructors);
+
+            // Compare with the .NET behavior
+            constructors = typeof(ConstructorParameterless).GetConstructors(BindingFlags.NonPublic | BindingFlags.Static);
+
+            constructors.Should().HaveCount(1);
+            constructors[0].IsPrivate.Should().BeTrue();
+        }
+
+        [Fact]
         public void ActivatorUtilitiesConstructorPropertiesRedirectedToWrappedConstructor()
         {
             var type = new ActivatorUtilitiesConstructorTypeAdapter(typeof(ConstructorTest));
@@ -285,6 +323,29 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.Tests.Tests
         private class ConstructorForNoMatchingVisibilityTest
         {
             public ConstructorForNoMatchingVisibilityTest()
+            {
+            }
+        }
+
+        private class ConstructorParameterless : ConstructorParameterlessBase
+        {
+            static ConstructorParameterless()
+            {
+            }
+
+            public ConstructorParameterless()
+            {
+            }
+        }
+
+        private class ConstructorParameterlessBase
+        {
+            static ConstructorParameterlessBase()
+            {
+            }
+
+            [ActivatorUtilitiesConstructor]
+            public ConstructorParameterlessBase()
             {
             }
         }
