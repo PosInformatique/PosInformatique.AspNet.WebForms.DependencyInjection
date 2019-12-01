@@ -9,6 +9,14 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests
 {
     public partial class About : Page
     {
+        static About()
+        {
+        }
+
+        public About()
+        {
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
 

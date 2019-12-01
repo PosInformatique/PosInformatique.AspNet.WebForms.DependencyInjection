@@ -11,7 +11,7 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests
 {
 
 
-    public partial class _Default
+    public partial class UserControlWithDependency
     {
 
         /// <summary>
@@ -22,23 +22,5 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView doggoList;
-
-        /// <summary>
-        /// urlFromHttpRequest control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label urlFromHttpRequest;
-
-        /// <summary>
-        /// UserControlWithDependency control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests.UserControlWithDependency UserControlWithDependency;
     }
 }

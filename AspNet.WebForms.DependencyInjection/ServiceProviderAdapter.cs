@@ -9,9 +9,12 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Globalization;
     using System.Linq;
+    using System.Reflection;
     using System.Threading;
     using System.Web.Hosting;
+    using System.Web.UI;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -201,10 +204,17 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
         private class DefaultServiceFactory : IServiceFactory
         {
             /// <summary>
+            /// Dictionary cache of service <see cref="Type"/> which have to be pass to the <see cref="ActivatorUtilities.CreateInstance(IServiceProvider, Type, object[])"/>
+            /// using an other <see cref="Type"/> (the orignal <see cref="Type"/> or a <see cref="ActivatorUtilitiesConstructorTypeAdapter"/>).
+            /// </summary>
+            private readonly ConcurrentDictionary<Type, Type> typeAdapters;
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="DefaultServiceFactory"/> class.
             /// </summary>
             private DefaultServiceFactory()
             {
+                this.typeAdapters = new ConcurrentDictionary<Type, Type>();
             }
 
             /// <summary>
@@ -215,7 +225,26 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection
             /// <inheritdoc />
             public object Create(IServiceProvider serviceProvider, Type serviceType)
             {
+                serviceType = this.typeAdapters.GetOrAdd(serviceType, GetAdaptedServiceType);
+
                 return ActivatorUtilities.CreateInstance(serviceProvider, serviceType);
+            }
+
+            /// <summary>
+            /// Gets the <see cref="Type"/> adapted to be use with <see cref="ActivatorUtilities.CreateInstance(IServiceProvider, Type, object[])"/>.
+            /// </summary>
+            /// <param name="serviceType"><see cref="Type"/> to adapt.</param>
+            /// <returns>The <see cref="Type"/> adapted to be use with <see cref="ActivatorUtilities.CreateInstance(IServiceProvider, Type, object[])"/>.</returns>
+            private static Type GetAdaptedServiceType(Type serviceType)
+            {
+                if (typeof(Control).IsAssignableFrom(serviceType) && serviceType.FullName.StartsWith("ASP"))
+                {
+                    // The serviceType to resolve is a control of ASP .NET Compiler compiled class. So, we use the ActivatorUtilitiesConstructorTypeAdapter
+                    // which will resolve correctly the ActivatorUtilitiesConstructorAttribute.
+                    return new ActivatorUtilitiesConstructorTypeAdapter(serviceType);
+                }
+
+                return serviceType;
             }
         }
 

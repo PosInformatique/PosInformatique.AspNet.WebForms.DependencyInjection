@@ -2,7 +2,9 @@
 PosInformatique.AspNet.WebForms.DependencyInjection is a library to add the IoC container support of Microsoft.Extensions.DependencyInjection for ASP .NET Web Forms
 
 ## Installing from NuGet
-The **PosInformatique.AspNet.WebForms.DependencyInjection** is available directly on the
+The
+[PosInformatique.AspNet.WebForms.DependencyInjection](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/)
+is available directly on the
 [NuGet](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/) official website.
 To download and install the library to your Visual Studio project using the following NuGet command line 
 ```
@@ -10,7 +12,9 @@ Install-Package PosInformatique.AspNet.WebForms.DependencyInjection
 ```
 
 ## Setting up
-After adding the **PosInformatique.AspNet.WebForms.DependencyInjection** package on your ASP .NET
+After adding the
+[PosInformatique.AspNet.WebForms.DependencyInjection](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/)
+package on your ASP .NET
 WebForms project call the `AddServiceCollection` the following lines in the ``Application_Start`` of your `HttpApplication` class in the
 `Global.asax.cs` code behind:
 ```csharp
@@ -49,7 +53,8 @@ namespace PosInformatique.AspNet.WebForms.DependencyInjection.IntegrationTests
 }
 ```
 You can register services with a *Transient* or *Singleton* scope. Unlike to ASP .NET Core,
-**PosInformatique.AspNet.WebForms.DependencyInjection** does not support *Scoped* scope services
+[PosInformatique.AspNet.WebForms.DependencyInjection](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/)
+does not support *Scoped* scope services
 which exists during the HTTP request lifetime.
 
 ## Setting up using an existing IServiceProvider/IServiceCollection
@@ -105,6 +110,139 @@ the ``IDogManager`` service instance will be available and **the same instance**
 - In the constructors of the ASP .NET Web Forms pages, user controls,...
 - In the constructors of the ASP .NET Core controllers
 - And so on...
+
+## Add the support of [ActivatorUtilitiesConstructor] attribute
+
+By default, the
+[Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/)
+dependency injection container will use any
+constructor which match the parameters of the control, or service to instantiate.
+In the version **2.1** of
+[Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/)
+library, Microsoft has introduced a new
+[ActivatorUtilitiesConstructorAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilitiesconstructorattribute)
+attribute which allows to force the `IServiceProvider` of the
+[Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/)
+library
+to call explicitely the constructor decorated.
+
+The version **1.2.0** of the
+[PosInformatique.AspNet.WebForms.DependencyInjection](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/)
+library add the support of the
+[ActivatorUtilitiesConstructorAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilitiesconstructorattribute)
+attribute even technically this attribute is not added by the ASP .NET Compiler on the generated ASPX and ASCX views.
+
+For example, imagine that you have the following user control:
+````charp
+public partial class UserControlWithDependency : System.Web.UI.UserControl
+{
+    private readonly IDogManager dogManager;
+
+    [ActivatorUtilitiesConstructor]   // Will be call by the IServiceProvider of the Microsoft.Extensions.DependencyInjection library.
+    public UserControlWithDependency(IDogManager dogManager)
+    {
+        this.dogManager = dogManager;
+    }
+
+    public UserControlWithDependency()
+    {
+    }
+}
+````
+
+When the application is loaded the ASP .NET Compiler generate the following code which will not add the
+[ActivatorUtilitiesConstructorAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilitiesconstructorattribute)
+attribute on the constructors associated:
+````charp
+public class usercontrolwithdependency_ascx : UserControlWithDependency
+{
+	...
+
+	[DebuggerNonUserCode]
+	public usercontrolwithdependency_ascx()
+	{
+		__Init();
+	}
+
+	[DebuggerNonUserCode]
+	public usercontrolwithdependency_ascx(IDogManager dogManager)
+		: base(dogManager)
+	{
+		__Init();
+	}
+
+    ...
+}
+````
+
+The previous generated code can not be used correctly by the
+[Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/)
+library to call the right constructor based on the
+[ActivatorUtilitiesConstructorAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilitiesconstructorattribute).
+
+In the version **1.2.0**, the
+[PosInformatique.AspNet.WebForms.DependencyInjection](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/)
+add the full support of the
+[ActivatorUtilitiesConstructorAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilitiesconstructorattribute)
+by *virtually* add the attribute by reflection in the class generated by the ASP .NET Compiler.
+
+## Issue in the ASPX/ASCX designer
+
+When changing the constructor of the user controls and control to inject dependencies using the
+[HttpRuntime.WebObjectActivator](https://docs.microsoft.com/fr-fr/dotnet/api/system.web.httpruntime.webobjectactivator),
+the following message can appear when adding these controls to a page or other user controls:
+
+> *Element 'xxxxx' is not a known element. This can occur if there is a compilation error in the Web site, or the web.config
+file is missing*.
+
+![Visual Studio Designer Issue](Documentation/VisualStudioDesignerIssue.png)
+
+In this case, lot of *fakes* errors/warnings can be raised by Visual Studio (but the application can compile successfully).
+
+![Visual Studio Errors And Warnings](Documentation/VisualStudioErrorsAndWarnings.png)
+
+Also, the IntelliSense for the ASPX code to edit the properties of the added controls does not work...
+
+This is a
+[known issue](https://developercommunity.visualstudio.com/content/problem/668468/user-control-fake-error-with-dependency-injection.html)
+of Visual Studio and Microsoft seam to take *Under Consideration*...
+
+There is workaround, which is provided with the
+[PosInformatique.AspNet.WebForms.DependencyInjection](https://www.nuget.org/packages/PosInformatique.AspNet.WebForms.DependencyInjection/)
+package by adding
+a constructor without parameter in the control:
+
+````csharp
+public partial class UserControlWithDependency : System.Web.UI.UserControl
+{
+    private readonly IDogManager dogManager;
+
+    [ActivatorUtilitiesConstructor]   // It is import to set this attribute to be sure this constructor will be called by the Microsoft.Extensions.DependencyInjection.
+    public UserControlWithDependency(IDogManager dogManager)
+    {
+        this.dogManager = dogManager;
+    }
+
+    // Avoid the errors and the warnings in the Visual Studio ASPX code designer
+    public UserControlWithDependency()
+    {
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        this.doggoList.DataSource = this.dogManager.GetDogs();
+        this.doggoList.DataBind();
+    }
+}
+````
+
+> **Remarks**: You have also to add the [ActivatorUtilitiesConstructorAttribute](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.activatorutilitiesconstructorattribute)
+on the constructor which requires the services registered in the
+[Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/)
+container.
+Without this attribute, the constructor without parameter can be used during the execution of the application
+with the default behavior of the
+[Microsoft.Extensions.DependencyInjection](https://www.nuget.org/packages/Microsoft.Extensions.DependencyInjection/).
 
 ## Contributions
 Do not hesitate to clone my code and submit some changes...
